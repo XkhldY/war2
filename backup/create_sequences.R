@@ -1,0 +1,20 @@
+Create.sequences<-function (table)
+{
+  i=1
+  Sequences_test=NULL
+  while(i<=nrow(table))
+  {
+    sequence=as.character(table[i,]$location)
+    k=i
+    i=i+1
+    while(table[i,]$prev_SpID!=-1 & i<=nrow(table))
+    {
+      # sequence=c(sequence,table_user[i,]$location)
+      sequence=stringi::stri_join(sequence,as.character(table[i,]$location),sep=",")
+      i=i+1
+    }
+    Sequences_test=as.data.frame(rbind(Sequences_test,c(sequence,table[k,]$day)),stringsAsFactors=FALSE)
+    
+  }
+  return (Sequences_test)
+}
