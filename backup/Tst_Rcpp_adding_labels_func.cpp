@@ -82,6 +82,85 @@ DataFrame tst2(DataFrame x) {
   x["label"]=label;
   return x;
 }
+//-------------------------------------
+// [[Rcpp::export]]
+DataFrame PreNovelityCheck(DataFrame x) {
+  NumericVector label=x["label"];
+  NumericVector n=label.size();
+  NumericVector PreNovel(n);
+
+  
+  PreNovel[0]=0;
+  for(int j=0;j<PreNovel.size()-1;j++)
+  {
+    
+    if(label[j]==1)
+      PreNovel[j+1]=1;
+    else
+      PreNovel[j+1]=0;
+
+  }
+  x["PreNovel"]=PreNovel;
+  return x;
+}
+//----------visiting ratio---------------
+// [[Rcpp::export]]
+DataFrame VisitingRatio(DataFrame x,NumericVector clusters,NumericVector UniCluster) {
+  NumericVector pointcluster=x["cluster"];
+  NumericVector n=pointcluster.size();
+  NumericVector VisitingRatio(n);
+
+  int count1=0;
+  int count2=0;
+  for(int i=0;i<UniCluster.size();i++)
+  {
+    for(int j=0;j<VisitingRatio.size();j++)
+    {
+      if(pointcluster[j]==UniCluster[i])
+        count1++;
+      if(clusters[j]==UniCluster[i])
+        count2++;
+    }
+    for(int k=0;k<VisitingRatio.size();k++)
+    {
+      if(pointcluster[k]==UniCluster[i])
+      VisitingRatio[k]=count1/count2;  
+    }
+    
+    
+  }
+  x["VisitingRatio"]=VisitingRatio;
+  return x;
+}
+//--------------------------adding cluster
+// [[Rcpp::export]]
+DataFrame addclust(DataFrame x,DataFrame data_one_loc_id) {
+  NumericVector a=x["location_id"];
+  
+  NumericVector locID=data_one_loc_id["location_id"];
+  NumericVector cluster=data_one_loc_id["cluster"];
+  // bool exists;
+  int var=0;
+  // exists = std::find(locID.begin(), locID.end(), a[0]) != locID.end();
+  
+  //int var = std::distance(locID, std::find(locID.begin(), locID.end(),1));
+  // if(exists)
+  // {
+  var=std::distance(locID.begin(),std::find(locID.begin(), locID.end(),a[0]));
+  // cout<<var<<"\n";
+  x["cluster"]=cluster[var];
+  
+  // }
+  // else{
+  //   x["cluster"]=-1;
+  //   cout<<-1<<"\n";
+  // }
+  
+  // std::fill_n(cluster, cluster.size(), 0);
+  
+  return x;
+}
+
 
 // func<-function(x)
 // {
@@ -99,7 +178,7 @@ DataFrame tst2(DataFrame x) {
 //   
 //   return (x)
 // }
-// [[Rcpp::export]]
+//[[Rcpp::export]]
 RcppExport SEXP comp(SEXP x, SEXP y){
   int i,n;
   Rcpp::NumericVector vector1(x);
@@ -114,10 +193,10 @@ RcppExport SEXP comp(SEXP x, SEXP y){
 ;
 
 /*** R
-d=data.frame(a=1:1000)
-  timesTwo(d)
-# data_50more_wlabels$label=1
-  data$label=1
+# d=data.frame(a=1:1000)
+#   timesTwo(d)
+# # data_50more_wlabels$label=1
+#   data$label=1
 # system.time(m<-tst(data))
 # system.time(x<-ddply(data_50more[data_50more$user<10,],.(user),tst))
 # x=rnorm(100,0,1)

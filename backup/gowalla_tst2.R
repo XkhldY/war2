@@ -67,6 +67,10 @@ func7<-function(x)
 data_50more_wlabels_Nratio=ddply(data_50more_wlabels[data_50more_wlabels$user==2,],.(user),func10)
 
 
+
+system.time(data_50more_wlabels_Nratio<-ddply(x2[x2$user<100,],.(user),func10))
+
+
 qplot(x =1:nrow(data_50more_wlabels_Nratio),geom=c("point", "smooth"),y =Nratio,data = data_50more_wlabels_Nratio)
 
 func10<-function(x)
