@@ -55,7 +55,7 @@ NumericVector tst(DataFrame x) {
 }
 
 // [[Rcpp::export]]
-DataFrame tst2(DataFrame x) {
+DataFrame adding_labels(DataFrame x) {
   NumericVector a=x["location_id"];
   NumericVector user=x["user"];
   NumericVector label=x["label"];
