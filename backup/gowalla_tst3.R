@@ -243,7 +243,7 @@ system.time(training_set_label<-ddply(.data =training_set_label,.(user),
 
 
 #---------------add to file------------------------
-write.csv(training_set_label,"d:/training.csv",row.names = FALSE)
+write.csv(training_set_label,"d:/testing.csv",row.names = FALSE)
 # #---------------------------------------models
 # training_set_label$label<-as.numeric(training_set_label$label)
 d<-glm(formula = label ~ preNovel+
