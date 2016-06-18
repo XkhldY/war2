@@ -1,6 +1,7 @@
 seq.matrix<-function(states)
 {
   dt=data.frame(1,2)
+  # dt=data.frame(x1=NA,x2=NA)
   b=1
   j=1
   for(i in 1:length(states))

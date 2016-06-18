@@ -1,7 +1,8 @@
 library(rpart)
 library(pROC)
 
-
+training<-fread("D:\\training.csv")
+testing<-fread("D:\\testing.csv")
 t<-training#[1:10000,]
 t$label<-as.character(t$label)
 t$HOW<-log10(t$HOW)
