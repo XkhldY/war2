@@ -6,15 +6,15 @@ library("fossil");library(LPCM);library("fpc");library("lubridate")
 library(markovchain);library(dplyr);library(leaflet)
 library(magrittr)
 
-f="D:/StayPoints.txt"
+f="D:/All_StayPoints.txt"
 table_user_training=data.frame(read.table(sep = ",",f,header = TRUE,
                                           stringsAsFactors=FALSE))
 
 
 escape=0
 for(q in 
-    # 1
-    unique(table_user_training$UserID)
+    1:50
+    # unique(table_user_training$UserID)
 )
 {
   # q=0
