@@ -14,9 +14,21 @@ library("geosphere")
 # # download.file("https://snap.stanford.edu/data/loc-gowalla_totalCheckins.txt.gz",temp)
 # data<-read.table(gzfile("D:\\work\\Research\\location research\\datasets\\loc-gowalla_totalCheckins.txt.gz"))  
 # png("Gowalla_Bilbao.png",height=1280,width=1080)
-data <- fread("D:\\work\\Research\\location research\\datasets\\Gowalla_totalCheckins.txt")
-new.names <- c("user","check-in time", "latitude", "longitude",	"location_id")
-names(data) <- new.names
+data <- fread("D:\\All_StayPoints.txt")
+colnames(data)[which(names(data) == "UserID")] <- "user"
+data$`check-in time`=paste(data$date,data$time)
+colnames(data)[which(names(data) == "Long")] <- "longitude"
+colnames(data)[which(names(data) == "Lat")] <- "latitude"
+
+
+ll=cbind(data$longitude,data$latitude)
+xy = mercator(ll)#/10000000
+
+dbnew=dbscan(xy,eps = 50,minPts = 1)
+
+data$location_id=dbnew$cluster
+# new.names <- c("user","check-in time", "latitude", "longitude",	"location_id")
+# names(data) <- new.names
 data$`check-in time`<-parse_date_time(data$`check-in time`,"YmdHMS")
 
 # newdata <- data[order(data$`check-in time`, data$user),] 
@@ -25,7 +37,7 @@ data$`check-in time`<-parse_date_time(data$`check-in time`,"YmdHMS")
 newdata<-ddply(data, .(user), function(x) x[with(x, order(`check-in time`)),])
 # str(newdata)
 # x=NULL
-data_50more<-ddply(newdata, .(user), function(x) nrow(x)>100)
+data_50more<-ddply(newdata, .(user), function(x) nrow(x)>50)
 
 data_50more<-data_50more[data_50more$V1==TRUE,]
 data_50more<-newdata[newdata$user%in%data_50more$user,]
@@ -34,6 +46,8 @@ data_50more$label<-1
 set.seed(1)
 training_set<-ddply(data_50more,.(user),function(x) x[1:(floor(.7*nrow(x))),])
 testing_set<-ddply(data_50more,.(user),function(x) x[(floor(.7*nrow(x))+1):nrow(x),])
+
+train_temp=training_set
 
 training_set=testing_set
 #-----------------------Rcpp-------adding novel and regularity labels------
@@ -135,7 +149,7 @@ VisitingRatioR<-function(q,cluster)
   {
     count1=length(q[q$cluster==q[i,]$cluster,]$cluster)
     count2=length(cluster[cluster==q[i,]$cluster])
-           
+    
     q[i,]$VisitingRatio=count1/count2
     
   }
@@ -199,7 +213,7 @@ AddingID<-function(x){
 } 
 training_set_label<-ddply(training_set_label,.(user),AddingID)
 
-  
+
 
 CalcNovelityRatio<-function(x)
 {
@@ -223,8 +237,8 @@ training_set_label<-ddply(training_set_label,.(user),CalcNovelityRatio)
 UniqueDays<-function(x)
 {
   lis=aggregate(x[,"location_id"],list(year(x$`check-in time`),
-                                                        day(x$`check-in time`),
-                                                        month(x$`check-in time`)),list)
+                                       day(x$`check-in time`),
+                                       month(x$`check-in time`)),list)
   x$NoOfDays=nrow(lis)
   return(x)
 }
@@ -236,11 +250,11 @@ system.time(training_set_label<-ddply(.data =training_set_label,.(user),UniqueDa
 # system.time(q<-ddply(.data =q,.(user),PreNovelityCheck))
 #another sol. more speedy :D
 system.time(training_set_label<-ddply(.data =training_set_label,.(user),
-                     function(x){
-                                   preNovel=shift(x$label,fill=0)
-                                   x$preNovel=preNovel
-                                   return(x)
-                                }))
+                                      function(x){
+                                        preNovel=shift(x$label,fill=0)
+                                        x$preNovel=preNovel
+                                        return(x)
+                                      }))
 
 #-------next location novel or regular--------------------
 system.time(training_set_label<-ddply(.data =training_set_label,.(user),
@@ -249,24 +263,25 @@ system.time(training_set_label<-ddply(.data =training_set_label,.(user),
                                         x$NextNovel=NextNovel
                                         return(x)
                                       }))
+
 #---------------add to file------------------------
-write.csv(training_set_label,"d:/testing_100.csv",row.names = FALSE)
+write.csv(training_set_label,"d:/testing_geolife2.csv",row.names = FALSE)
 # #---------------------------------------models
 # training_set_label$label<-as.numeric(training_set_label$label)
-# d<-glm(formula = label ~ preNovel+
-#                       NoOfDays+
-#                         Nratio+
-#                       distinct+
-#                       distdiff+
-#                  VisitingRatio+
-#                       timediff+
-#                            HOW+
-#                            DOW+
-#                            HOD, 
-#     family = binomial, data = training_set_label)
-# 
-# library(caret)
-# varImp(d)
+d<-glm(formula = label ~ preNovel+
+         NoOfDays+
+         Nratio+
+         distinct+
+         distdiff+
+         VisitingRatio+
+         timediff+
+         HOW+
+         DOW+
+         HOD, 
+       family = binomial, data = training_set_label)
+
+library(caret)
+varImp(d)
 
 # 
 # sapply(training_set_label,sd)

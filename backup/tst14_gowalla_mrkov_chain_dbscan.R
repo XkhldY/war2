@@ -11,13 +11,14 @@ library(dbscan)
 # training<-fread("D:\\training.csv")
 # testing<-fread("D:\\testing.csv")
 result=data.frame("userID"=0,"N_U_train"=0,"N_U_test"=0,"dbscan"=0,"ACC"=0,"match"=0,"mismatch"=0,"noise"=0)
+q=1
 for(ij in unique(training[training$user==2,]$user))
 {
     training_portion=training[training$user<4,]
-    testing_portion=testing[testing$user==2,]
+    testing_portion=testing[testing$user==ij,]
     
-    result[ij,]$N_U_train=length(unique(training_portion$user))
-    result[ij,]$N_U_test=length(unique(testing_portion$user))
+    result[q,]$N_U_train=length(unique(training_portion$user))
+    result[q,]$N_U_test=length(unique(testing_portion$user))
     # escape=0
     
     # data_50more<-ddply(training_portion, .(user),)
@@ -26,7 +27,7 @@ for(ij in unique(training[training$user==2,]$user))
     
     dbnew=dbscan(dist(xy),eps = 1000,minPts = 1,method = "dist")
     
-    result[ij,]$dbscan=paste(dbnew$eps,":",dbnew$minPts)
+    result[q,]$dbscan=paste(dbnew$eps,":",dbnew$minPts)
     
     training_portion$dbscan=dbnew$cluster
     
@@ -75,15 +76,15 @@ for(ij in unique(training[training$user==2,]$user))
                 }
               )    
       }
-      result[ij,]$ACC=(100*j)/(j+k)
-      result[ij,]$userID=training_portion[i,]$user
-      result[ij,]$match=j
-      result[ij,]$mismatch=k
-      result[ij,]$noise=length(location)-(k+j)
+      result[q,]$ACC=(100*j)/(j+k)
+      result[q,]$userID=training_portion[i,]$user
+      result[q,]$match=j
+      result[q,]$mismatch=k
+      result[q,]$noise=length(location)-(k+j)
       
     } 
       
-write.table(result,file = "d://helloo_all_new.txt",row.names = F,quote = F,append = T,sep = ",")
+write.table(result,file = cat("d://markovChain.txt"),row.names = F,quote = F,,sep = ",")
 
 
 #       cat(sprintf("user No.:\ %i\ accuracy=\ %f\ \n", training_portion[i,]$user, (100*j)/(j+k)))

@@ -1,16 +1,19 @@
 library(rpart)
+library(data.table)
 library(pROC)
-
-training<-fread("D:\\training.csv")
-testing<-fread("D:\\testing.csv")
+library(caret)
+# training<-fread("D:\\training.csv")
+# testing<-fread("D:\\testing.csv")
+training<-fread("D:\\training_100.csv")
+testing<-fread("D:\\testing_100.csv")
 t<-training#[1:10000,]
-t$label<-as.character(t$label)
-t$HOW<-log10(t$HOW)
-temporal<-rpart(label~HOW+timediff+DOW+HOD,method = "class",data = t)
-Historical<-rpart(label~Nratio+NoOfDays+preNovel+distinct,method = "class",data = t)
-spatial<-rpart(label~distdiff+VisitingRatio,method = "class",data = t)
+t$NextNovel<-as.character(t$NextNovel)
+# t$HOW<-log10(t$HOW)
+temporal<-rpart(NextNovel~HOW+timediff+DOW+HOD,method = "class",data = t)
+Historical<-rpart(NextNovel~Nratio+NoOfDays+preNovel+distinct,method = "class",data = t)
+spatial<-rpart(NextNovel~distdiff+VisitingRatio,method = "class",data = t)
 
-all<-rpart(label~HOW+timediff+DOW+HOD
+all<-rpart(NextNovel~HOW+timediff+DOW+HOD
            +Nratio+NoOfDays+preNovel+distinct
            +distdiff+VisitingRatio,method = "class",data = t)
 
@@ -43,9 +46,9 @@ spatialpredict<-predict(spatial,type = "class",newdata = testing)
 
 allpredict<-predict(all,type = "class",newdata = testing)
 
-temporalConf=confusionMatrix(temporalpredict,testing$label)
-historicalConf=confusionMatrix(historicalpredict,testing$label)
-spatialConf=confusionMatrix(spatialpredict,testing$label)
+temporalConf=confusionMatrix(temporalpredict,testing$NextNovel)
+historicalConf=confusionMatrix(historicalpredict,testing$NextNovel)
+spatialConf=confusionMatrix(spatialpredict,testing$NextNovel)
 
-allConf=confusionMatrix(allpredict,testing$label)
+allConf=confusionMatrix(allpredict,testing$NextNovel)
 
